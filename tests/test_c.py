@@ -590,12 +590,6 @@ class CTest(unittest.TestCase):
         else:
             self.assertEqual(str(cm.exception), 'Float not 32 or 64 bits.')
 
-        # Long bool.
-        with self.assertRaises(NotImplementedError) as cm:
-            pack('b65', True)
-
-        self.assertEqual(str(cm.exception), 'Bool over 64 bits.')
-
         # Text not multiple of 8 bits.
         with self.assertRaises(NotImplementedError) as cm:
             pack('t1', '')

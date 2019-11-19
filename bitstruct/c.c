@@ -226,17 +226,19 @@ static void pack_bool(struct bitstream_writer_t *self_p,
                       PyObject *value_p,
                       struct field_info_t *field_info_p)
 {
-    bitstream_writer_write_u64_bits(self_p,
-                                    PyObject_IsTrue(value_p),
-                                    field_info_p->number_of_bits);
+    bitstream_writer_write_repeated_bit(self_p, 0, field_info_p->number_of_bits - 1);
+    bitstream_writer_write_bit(self_p, PyObject_IsTrue(value_p));
 }
 
 static PyObject *unpack_bool(struct bitstream_reader_t *self_p,
                              struct field_info_t *field_info_p)
 {
-    return (PyBool_FromLong((long)bitstream_reader_read_u64_bits(
-                                self_p,
-                                field_info_p->number_of_bits)));
+    int val = false;
+    for(int i = 0; i < field_info_p->number_of_bits; ++i){
+        val |= bitstream_reader_read_bit(self_p);
+    }
+
+    return PyBool_FromLong(val);
 }
 
 static void pack_text(struct bitstream_writer_t *self_p,
@@ -424,12 +426,6 @@ static int field_info_init_bool(struct field_info_t *self_p,
 {
     self_p->pack = pack_bool;
     self_p->unpack = unpack_bool;
-
-    if (number_of_bits > 64) {
-        PyErr_SetString(PyExc_NotImplementedError, "Bool over 64 bits.");
-        return (-1);
-    }
-
     return (0);
 }
 
